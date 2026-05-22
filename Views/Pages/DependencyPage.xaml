@@ -1,0 +1,318 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.DependencyPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 좌측: 에셋 목록 -->
+        <Border Grid.Column="0" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Text="🔗" FontSize="13" Foreground="#bc8cff" VerticalAlignment="Center"/>
+                            <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                                <Run Text="의존성 그래프"/>
+                                <Run Text=" — GUID 교차 분석" Foreground="#8b949e" FontSize="10"/>
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="✦ 미사용 AI 분석" Style="{StaticResource ToolBtn}"
+                                    Command="{Binding AnalyzeUnusedAssetsCommand}"
+                                    Padding="10,3" FontSize="10"
+                                    ToolTip="Gemini로 미사용 에셋 정리 우선순위 분석"/>
+                            <Button Content="⇣ CSV" Style="{StaticResource ToolBtn}"
+                                    Command="{Binding ExportDependencyCsvCommand}"
+                                    Padding="10,3" FontSize="10" Margin="6,0,0,0"
+                                    ToolTip="의존성 결과를 CSV로 내보내기"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,10">
+                    <StackPanel>
+                        <TextBlock Text="{Binding DependencySummary}"
+                                   Foreground="#8b949e" FontSize="10" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding DependencyFilter, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="10,5" FontSize="11"/>
+                            <CheckBox Grid.Column="1" Content="미사용만"
+                                      IsChecked="{Binding ShowOnlyUnused}"
+                                      Foreground="#c9d1d9" FontSize="10"
+                                      VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="2" Background="#21262d" Padding="16,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="에셋"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="In"     Foreground="#8b949e" FontSize="9" FontWeight="SemiBold" TextAlignment="Right"/>
+                        <TextBlock Grid.Column="2" Text="Out"    Foreground="#8b949e" FontSize="9" FontWeight="SemiBold" TextAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="3">
+                    <ListBox ItemsSource="{Binding DependencyNodes}"
+                             SelectedItem="{Binding SelectedDependency}"
+                             Background="Transparent" BorderThickness="0"
+                             HorizontalContentAlignment="Stretch"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#1f6feb33"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="16,8">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="탐색기에서 열기"
+                                                      Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding Path}"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="60"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Background="{Binding Severity, Converter={StaticResource SevToBrush}}"
+                                                        CornerRadius="3" Padding="5,1" Margin="0,0,6,0"
+                                                        Visibility="{Binding IsUnused, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="미사용" Foreground="White" FontSize="8" FontWeight="SemiBold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#c9d1d9" FontSize="11" FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding RelativePath}"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Subtitle}"
+                                                       Foreground="#8b949e" FontSize="9" Margin="0,2,0,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding IncomingCount}"
+                                                   Foreground="#58a6ff" FontSize="11" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" TextAlignment="Right"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding OutgoingCount}"
+                                                   Foreground="#3fb950" FontSize="11" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" TextAlignment="Right"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="프로젝트를 분석하면 의존성 그래프가 표시됩니다"
+                               Foreground="#8b949e" FontSize="11"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding HasDependencies, Converter={StaticResource InvBoolToVis}}"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- 우측: 선택된 에셋 상세 -->
+        <Border Grid.Column="1" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10" Margin="14,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding SelectedDependency.Name, FallbackValue='에셋을 선택하세요'}"
+                                       Foreground="White" FontSize="13" FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding SelectedDependency.RelativePath, FallbackValue=''}"
+                                       Foreground="#8b949e" FontSize="10" Margin="0,4,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding SelectedDependency.Subtitle, FallbackValue=''}"
+                                       Foreground="#bc8cff" FontSize="10" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="📂 탐색기"
+                                Style="{StaticResource ToolBtn}"
+                                Command="{Binding OpenInExplorerCommand}"
+                                CommandParameter="{Binding SelectedDependency.Path}"
+                                Padding="10,3" FontSize="10" VerticalAlignment="Top"
+                                Visibility="{Binding HasSelectedDependency, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding HasSelectedDependency, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Margin="14,12,14,14">
+                            <!-- Incoming -->
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="#58a6ff" VerticalAlignment="Center"/>
+                                <TextBlock Foreground="#c9d1d9" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                                    <Run Text="이 에셋을 참조하는 곳"/>
+                                    <Run Text="{Binding SelectedIncoming.Count, Mode=OneWay, StringFormat=' ({0})'}"
+                                         Foreground="#8b949e" FontSize="10"/>
+                                </TextBlock>
+                                <TextBlock Text="— 클릭하면 해당 에셋으로 이동" Foreground="#8b949e" FontSize="9"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <Border Background="#0d1117" BorderBrush="#30363d" BorderThickness="1" CornerRadius="6"
+                                    Margin="0,6,0,16" MinHeight="60">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding SelectedIncoming}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Command="{Binding DataContext.DrillToDependencyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bd" Background="Transparent" Padding="12,5">
+                                                                <TextBlock Text="{Binding}" Foreground="#c9d1d9" FontSize="10"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           ToolTip="{Binding}"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#1f2937"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="이 에셋을 참조하는 곳 없음 — 미사용일 가능성 높음"
+                                               Foreground="#8b949e" FontSize="10" FontStyle="Italic"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Padding="12,16">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedIncoming.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+
+                            <!-- Outgoing -->
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="#3fb950" VerticalAlignment="Center"/>
+                                <TextBlock Foreground="#c9d1d9" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                                    <Run Text="이 에셋이 참조하는 것"/>
+                                    <Run Text="{Binding SelectedOutgoing.Count, Mode=OneWay, StringFormat=' ({0})'}"
+                                         Foreground="#8b949e" FontSize="10"/>
+                                </TextBlock>
+                                <TextBlock Text="— 클릭하면 해당 에셋으로 이동" Foreground="#8b949e" FontSize="9"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <Border Background="#0d1117" BorderBrush="#30363d" BorderThickness="1" CornerRadius="6"
+                                    Margin="0,6,0,0" MinHeight="60">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding SelectedOutgoing}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Command="{Binding DataContext.DrillToDependencyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bd" Background="Transparent" Padding="12,5">
+                                                                <TextBlock Text="{Binding}" Foreground="#c9d1d9" FontSize="10"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           ToolTip="{Binding}"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#1f2937"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="이 에셋이 참조하는 다른 에셋 없음 (텍스처/오디오 같은 리프 노드)"
+                                               Foreground="#8b949e" FontSize="10" FontStyle="Italic"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Padding="12,16">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedOutgoing.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <TextBlock Text="좌측 목록에서 에셋을 선택하면 참조 관계가 표시됩니다"
+                               Foreground="#8b949e" FontSize="11"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding HasSelectedDependency, Converter={StaticResource InvBoolToVis}}"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

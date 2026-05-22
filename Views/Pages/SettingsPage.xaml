@@ -1,0 +1,133 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20" MaxWidth="780" HorizontalAlignment="Left">
+
+            <!-- AI 섹션 -->
+            <Border Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10" Margin="0,0,0,16">
+                <StackPanel>
+                    <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="#58a6ff" VerticalAlignment="Center"/>
+                            <TextBlock Text="AI 어시스턴트 (Gemini)" Foreground="White"
+                                       FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Margin="20">
+                        <TextBlock Text="GEMINI_API_KEY" Foreground="#8b949e" FontSize="10" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <PasswordBox x:Name="ApiKeyBox"
+                                         Grid.Column="0"
+                                         Background="#21262d" Foreground="#c9d1d9"
+                                         BorderBrush="#30363d" BorderThickness="1"
+                                         Padding="10,7"
+                                         FontFamily="Cascadia Mono, Consolas, Malgun Gothic, Segoe UI"
+                                         FontSize="11"/>
+                            <Button Grid.Column="1" Content="✓ 저장" Style="{StaticResource ToolBtn}"
+                                    Click="ApiKeyBox_Save" Margin="8,0,0,0" Padding="14,4"/>
+                            <Button Grid.Column="2" Content="🔑 키 발급" Style="{StaticResource ToolBtn}"
+                                    Command="{Binding OpenApiKeyPageCommand}" Margin="6,0,0,0" Padding="14,4"
+                                    ToolTip="https://aistudio.google.com/apikey"/>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Ellipse Width="6" Height="6" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="#f85149"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasApiKey}" Value="True">
+                                                <Setter Property="Fill" Value="#58a6ff"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="API 키 상태" Foreground="#8b949e" FontSize="10" Margin="6,0,8,0"/>
+                            <TextBlock Foreground="#c9d1d9" FontSize="10">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="설정 안 됨"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasApiKey}" Value="True">
+                                                <Setter Property="Text" Value="저장됨 (config.json + 메모리)"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <TextBlock Text="모델" Foreground="#8b949e" FontSize="10" Margin="0,16,0,4"/>
+                        <ComboBox ItemsSource="{Binding GeminiModelOptions}"
+                                  SelectedItem="{Binding GeminiModel}" Width="260" HorizontalAlignment="Left"/>
+                        <TextBlock Foreground="#8b949e" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap">
+                            flash = 빠르고 저렴 · pro = 더 똑똑하지만 느림/비쌈
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- GitHub 섹션 -->
+            <Border Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10" Margin="0,0,0,16">
+                <StackPanel>
+                    <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="#3fb950" VerticalAlignment="Center"/>
+                            <TextBlock Text="GitHub 연동" Foreground="White"
+                                       FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Margin="20">
+                        <TextBlock Text="기본 저장소" Foreground="#8b949e" FontSize="10" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding GithubRepo, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="10,7" FontSize="11"/>
+                        <TextBlock Foreground="#8b949e" FontSize="9" Margin="0,4,0,0">
+                            예: yeonyeong0120/Repo_Artti — owner/repo 또는 전체 URL
+                        </TextBlock>
+                        <Button Content="↗ 지금 불러오기" Style="{StaticResource ToolBtn}"
+                                Command="{Binding LoadCommitsCommand}" HorizontalAlignment="Left"
+                                Margin="0,10,0,0" Padding="14,5"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 데이터/설정 위치 -->
+            <Border Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+                <StackPanel>
+                    <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="#bc8cff" VerticalAlignment="Center"/>
+                            <TextBlock Text="데이터 / 설정 위치" Foreground="White"
+                                       FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Margin="20">
+                        <TextBlock Foreground="#8b949e" FontSize="10" TextWrapping="Wrap">
+                            설정 파일: %APPDATA%\UnityProjectAnalyzer\config.json
+                            <LineBreak/>
+                            저장 항목: Gemini API 키, 모델, GitHub 저장소, 마지막 프로젝트 경로
+                        </TextBlock>
+                        <Button Content="📂 설정 폴더 열기" Style="{StaticResource ToolBtn}"
+                                Command="{Binding OpenConfigFolderCommand}" HorizontalAlignment="Left"
+                                Margin="0,10,0,0" Padding="14,5"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

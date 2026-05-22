@@ -1,0 +1,118 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.AssetsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Margin="20" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="6" Height="6" Fill="#3fb950" VerticalAlignment="Center"/>
+                    <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                        <Run Text="에셋 탐색기"/>
+                        <Run Text=" — 용량 큰 순서, 최대 500개" Foreground="#8b949e" FontSize="10"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- 필터 -->
+            <Border Grid.Row="1" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding AssetFilter, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="10,5" FontSize="11"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding AssetCategories}"
+                              SelectedItem="{Binding AssetCategoryFilter}"
+                              Margin="10,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- 헤더 행 -->
+            <Border Grid.Row="2" Background="#21262d" Padding="16,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="카테고리" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="1" Text="파일명"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="2" Text="경로"     Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="3" Text="용량"     Foreground="#8b949e" FontSize="9" FontWeight="SemiBold" TextAlignment="Right"/>
+                </Grid>
+            </Border>
+
+            <!-- 리스트 -->
+            <Grid Grid.Row="3">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Assets}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="16,7">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="탐색기에서 열기"
+                                                      Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding Path}"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="200"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Category}"
+                                                   Foreground="#bc8cff" FontSize="10" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                   Foreground="#c9d1d9" FontSize="11"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Name}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Path}"
+                                                   Foreground="#8b949e" FontSize="9"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Path}"/>
+                                        <TextBlock Grid.Column="3" Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" TextAlignment="Right">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0:N0} B">
+                                                    <Binding Path="Size"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="프로젝트를 분석하면 에셋 목록이 표시됩니다"
+                           Foreground="#8b949e" FontSize="11"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding HasAssets, Converter={StaticResource InvBoolToVis}}"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

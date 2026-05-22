@@ -1,0 +1,98 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.GitPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Margin="20" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="6" Height="6" Fill="#58a6ff" VerticalAlignment="Center"/>
+                    <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                        <Run Text="Git 히스토리"/>
+                        <Run Text=" — 클릭하면 GitHub 커밋 페이지" Foreground="#8b949e" FontSize="10"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding GithubRepo, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="10,5" FontSize="11" ToolTip="owner/repo 또는 GitHub URL"/>
+                    <Button Grid.Column="1" Content="↗ 불러오기" Style="{StaticResource ToolBtn}"
+                            Command="{Binding LoadCommitsCommand}" Margin="8,0,0,0" Padding="14,4"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Commits}" Padding="8,6">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                                        HorizontalContentAlignment="Stretch"
+                                        Command="{Binding DataContext.OpenCommitCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bd" Background="Transparent" Padding="14,10" CornerRadius="4"
+                                                    BorderBrush="#30363d" BorderThickness="0,0,0,1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding ShortSha}"
+                                                               Foreground="#58a6ff" FontSize="11" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="{Binding Message}" Foreground="#c9d1d9" FontSize="11"
+                                                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Message}"/>
+                                                        <TextBlock Foreground="#8b949e" FontSize="9" Margin="0,2,0,0">
+                                                            <Run Text="{Binding Author}"/>
+                                                            <Run Text=" · "/>
+                                                            <Run Text="{Binding Date}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding TimeAgo}"
+                                                               Foreground="#8b949e" FontSize="10" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#21262d"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="저장소를 입력하고 [↗ 불러오기]를 누르세요"
+                           Foreground="#8b949e" FontSize="11"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding HasCommits, Converter={StaticResource InvBoolToVis}}"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

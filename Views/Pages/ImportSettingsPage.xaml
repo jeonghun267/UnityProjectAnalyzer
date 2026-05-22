@@ -1,0 +1,140 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.ImportSettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Margin="20" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🖼" FontSize="13" Foreground="#f0883e" VerticalAlignment="Center"/>
+                    <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                        <Run Text="에셋 임포트 설정 진단"/>
+                        <Run Text=" — .meta 파일에서 텍스처/오디오/모델 임포터 옵션 검사" Foreground="#8b949e" FontSize="10"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- 필터 -->
+            <Border Grid.Row="1" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="160"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding ImportFilter, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="10,5" FontSize="11"
+                             ToolTip="파일명/경로/문제 메시지 검색"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding ImportKindOptions}"
+                              SelectedItem="{Binding ImportKindFilter}"
+                              Margin="10,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- 헤더 행 -->
+            <Border Grid.Row="2" Background="#21262d" Padding="16,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="심각도" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="1" Text="종류"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="2" Text="진단"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="3" Text="용량"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold" TextAlignment="Right"/>
+                    <TextBlock Grid.Column="4" Text="액션"   Foreground="#8b949e" FontSize="9" FontWeight="SemiBold" TextAlignment="Right"/>
+                </Grid>
+            </Border>
+
+            <!-- 리스트 -->
+            <Grid Grid.Row="3">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding ImportFindings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="16,10">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="탐색기에서 열기"
+                                                      Command="{Binding DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding AssetPath}"/>
+                                            <MenuItem Header="✦ Gemini로 분석"
+                                                      Command="{Binding DataContext.AnalyzeImportFindingCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" CornerRadius="3" Padding="6,2" Margin="0,0,8,0"
+                                                Background="{Binding Severity, Converter={StaticResource SevToBrush}}"
+                                                Opacity="0.2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Severity}" FontSize="9" FontWeight="Bold"
+                                                       Foreground="{Binding Severity, Converter={StaticResource SevToBrush}}"/>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding AssetKind}"
+                                                   Foreground="#bc8cff" FontSize="10" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{Binding Name}" Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding RelativePath}"/>
+                                            <TextBlock Text="{Binding Message}" Foreground="#c9d1d9" FontSize="10"
+                                                       TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding Detail}" Foreground="#8b949e" FontSize="9"
+                                                       TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding RelativePath}" Foreground="#3fb950" FontSize="9"
+                                                       Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="3" Text="{Binding SizeText}"
+                                                   Foreground="#c9d1d9" FontSize="10" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" TextAlignment="Right"/>
+
+                                        <Button Grid.Column="4" Content="✦ AI" Style="{StaticResource ToolBtn}"
+                                                Padding="10,3" FontSize="10"
+                                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                Command="{Binding DataContext.AnalyzeImportFindingCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Gemini로 수정 절차 분석"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="프로젝트를 분석하면 .meta 임포터 설정 진단이 표시됩니다 — 깨끗하면 비어있을 수 있음 ✨"
+                           Foreground="#8b949e" FontSize="11"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           TextAlignment="Center" TextWrapping="Wrap" MaxWidth="500"
+                           Visibility="{Binding HasImportFindings, Converter={StaticResource InvBoolToVis}}"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,112 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.BuildLogPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Margin="20" Background="#161b22" BorderBrush="#30363d" BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Ellipse Width="6" Height="6" Fill="#d29922" VerticalAlignment="Center"/>
+                        <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0">
+                            <Run Text="Unity Editor.log"/>
+                            <Run Text=" — 최근 800줄" Foreground="#8b949e" FontSize="10"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="🔄 새로고침" Style="{StaticResource ToolBtn}"
+                                Command="{Binding RefreshBuildLogCommand}" Padding="10,4" FontSize="10"/>
+                        <Button Content="📄 파일 열기" Style="{StaticResource ToolBtn}"
+                                Command="{Binding OpenEditorLogCommand}" Padding="10,4" FontSize="10" Margin="6,0,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 메타 + 필터 -->
+            <Border Grid.Row="1" Background="#21262d" Padding="14,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Foreground="#8b949e" FontSize="9">
+                            <Run Text="경로: "/>
+                            <Run Text="{Binding BuildLogPath}" Foreground="#3fb950"/>
+                        </TextBlock>
+                        <TextBlock Foreground="#8b949e" FontSize="9" Margin="0,2,0,0">
+                            <Run Text="마지막 수정: "/>
+                            <Run Text="{Binding BuildLogLastWrite}" Foreground="#c9d1d9"/>
+                        </TextBlock>
+                    </StackPanel>
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding BuildLogTextFilter, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="8,4" FontSize="10"
+                                 ToolTip="메시지 검색"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding BuildLogSeverityOptions}"
+                                  SelectedItem="{Binding BuildLogSeverityFilter}"
+                                  Margin="8,0,0,0"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- 로그 리스트 -->
+            <Grid Grid.Row="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding BuildLog}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="14,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="46"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding LineNumber}"
+                                               Foreground="#8b949e" FontSize="9" TextAlignment="Right" Margin="0,0,8,0"/>
+                                    <Border Grid.Column="1" CornerRadius="2" Padding="4,1" Margin="0,0,8,0"
+                                            Background="{Binding Severity, Converter={StaticResource SevToBrush}}"
+                                            Opacity="0.2" HorizontalAlignment="Stretch">
+                                        <TextBlock Text="{Binding Severity}" FontSize="9" FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{Binding Severity, Converter={StaticResource SevToBrush}}"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="2" Text="{Binding Message}"
+                                               Foreground="#c9d1d9" FontSize="10" TextWrapping="NoWrap"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <TextBlock Text="[새로고침]을 눌러 Editor.log를 읽어오세요"
+                           Foreground="#8b949e" FontSize="11"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding HasBuildLog, Converter={StaticResource InvBoolToVis}}"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

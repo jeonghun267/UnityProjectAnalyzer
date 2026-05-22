@@ -1,0 +1,275 @@
+<UserControl x:Class="UnityProjectAnalyzer.Views.Pages.DashboardPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="PageResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+
+            <!-- STAT CARDS -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10" Padding="14">
+                    <StackPanel>
+                        <TextBlock Text="총 에셋 수" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalAssetCount}" Foreground="#58a6ff"
+                                   FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/>
+                        <Rectangle Height="2" Fill="#58a6ff" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10" Padding="14">
+                    <StackPanel>
+                        <TextBlock Text="미사용 에셋 (추정)" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding UnusedAssetCount}" Foreground="#d29922"
+                                   FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/>
+                        <TextBlock Foreground="#8b949e" FontSize="10">
+                            <Run Text="약 "/><Run Text="{Binding UnusedSizeText}"/><Run Text=" 절감"/>
+                        </TextBlock>
+                        <Rectangle Height="2" Fill="#d29922" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10" Padding="14">
+                    <StackPanel>
+                        <TextBlock Text="감지된 이슈" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding IssueCount}" Foreground="#f85149"
+                                   FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/>
+                        <Rectangle Height="2" Fill="#f85149" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10" Padding="14">
+                    <StackPanel>
+                        <TextBlock Text="프로젝트 용량" Foreground="#8b949e" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalSizeText}" Foreground="#3fb950"
+                                   FontSize="24" FontWeight="Bold" Margin="0,6,0,0"/>
+                        <Rectangle Height="2" Fill="#3fb950" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- CHARTS -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 도넛 -->
+                <Border Grid.Column="0" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="#3fb950" VerticalAlignment="Center"/>
+                                <TextBlock Text="에셋 카테고리 분포" Foreground="White" FontSize="11"
+                                           FontWeight="SemiBold" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Grid Grid.Row="1" MinHeight="240" Margin="16,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0" Width="180" Height="180" VerticalAlignment="Center">
+                                <Ellipse Width="160" Height="160" Stroke="#30363d" StrokeThickness="22"/>
+                                <ItemsControl ItemsSource="{Binding DonutSegments}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Grid/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Ellipse Width="160" Height="160"
+                                                     Stroke="{Binding Brush}"
+                                                     StrokeThickness="22"
+                                                     StrokeDashArray="{Binding DashArray}"
+                                                     RenderTransformOrigin="0.5,0.5">
+                                                <Ellipse.RenderTransform>
+                                                    <RotateTransform Angle="{Binding StartAngle}"/>
+                                                </Ellipse.RenderTransform>
+                                            </Ellipse>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding TotalSizeText}" Foreground="White"
+                                               FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Foreground="#8b949e" FontSize="10"
+                                               HorizontalAlignment="Center" Margin="0,2,0,0">
+                                        <Run Text="{Binding TotalAssetCount}"/>
+                                        <Run Text=" assets"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding DonutLegend}"
+                                          VerticalAlignment="Center" Margin="20,0,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="10"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Grid.Column="0" Width="8" Height="8"
+                                                       Fill="{Binding Brush}" RadiusX="2" RadiusY="2" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                       Foreground="#c9d1d9" FontSize="11"
+                                                       Margin="10,0,8,0" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding SizeText}"
+                                                       Foreground="#8b949e" FontSize="10"
+                                                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding PercentText}"
+                                                       Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" MinWidth="48" TextAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Grid.ColumnSpan="2" Text="프로젝트를 분석하면 표시됩니다"
+                                       Foreground="#8b949e" FontSize="11"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding HasDonut, Converter={StaticResource InvBoolToVis}}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 폴더 Top 5 -->
+                <Border Grid.Column="2" Background="#161b22" BorderBrush="#30363d"
+                        BorderThickness="1" CornerRadius="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="#30363d" BorderThickness="0,0,0,1" Padding="14,12">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="#58a6ff" VerticalAlignment="Center"/>
+                                <TextBlock Text="폴더별 용량 Top 5" Foreground="White" FontSize="11"
+                                           FontWeight="SemiBold" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Grid Grid.Row="1" MinHeight="240">
+                            <ItemsControl ItemsSource="{Binding TopFolders}" Margin="16,20">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,7">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="72"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Name}" Foreground="#c9d1d9" FontSize="11"
+                                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Name}"/>
+                                            <Border Grid.Column="1" Background="#21262d" Height="8"
+                                                    CornerRadius="4" Margin="10,0" ClipToBounds="True"
+                                                    HorizontalAlignment="Stretch">
+                                                <Rectangle HorizontalAlignment="Left" Fill="#58a6ff" Opacity="0.9"
+                                                           Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}}"
+                                                           RenderTransformOrigin="0,0.5">
+                                                    <Rectangle.RenderTransform>
+                                                        <ScaleTransform ScaleX="{Binding Percent}"/>
+                                                    </Rectangle.RenderTransform>
+                                                </Rectangle>
+                                            </Border>
+                                            <TextBlock Grid.Column="2" Text="{Binding SizeText}"
+                                                       Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" TextAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="프로젝트를 분석하면 표시됩니다"
+                                       Foreground="#8b949e" FontSize="11"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding HasTopFolders, Converter={StaticResource InvBoolToVis}}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- QUICK NAV CARDS -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Background="#161b22" BorderBrush="#30363d" BorderThickness="1"
+                        Padding="14" Cursor="Hand"
+                        Command="{Binding NavigateCommand}" CommandParameter="Issues"
+                        HorizontalContentAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Foreground="#f85149" FontSize="10" FontWeight="SemiBold">⚠ 이슈 분석 →</TextBlock>
+                        <TextBlock Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,6,0,0">
+                            <Run Text="{Binding IssueCount}"/><Run Text="개"/>
+                        </TextBlock>
+                        <TextBlock Foreground="#8b949e" FontSize="10" Margin="0,2,0,0"
+                                   Text="감지된 이슈 / AI 분석 가능"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2" Background="#161b22" BorderBrush="#30363d" BorderThickness="1"
+                        Padding="14" Cursor="Hand"
+                        Command="{Binding NavigateCommand}" CommandParameter="Scripts"
+                        HorizontalContentAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Foreground="#bc8cff" FontSize="10" FontWeight="SemiBold">ⓢ 스크립트 분석 →</TextBlock>
+                        <TextBlock Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,6,0,0">
+                            <Run Text="{Binding ScriptCount}"/><Run Text="개"/>
+                        </TextBlock>
+                        <TextBlock Foreground="#8b949e" FontSize="10" Margin="0,2,0,0"
+                                   Text=".cs 파일 / 클릭 시 AI 리뷰"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="4" Background="#161b22" BorderBrush="#30363d" BorderThickness="1"
+                        Padding="14" Cursor="Hand"
+                        Command="{Binding NavigateCommand}" CommandParameter="BuildLog"
+                        HorizontalContentAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Foreground="#d29922" FontSize="10" FontWeight="SemiBold">🏗 빌드 로그 →</TextBlock>
+                        <TextBlock Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,6,0,0"
+                                   Text="Editor.log"/>
+                        <TextBlock Foreground="#8b949e" FontSize="10" Margin="0,2,0,0"
+                                   Text="Unity 에디터 최근 로그 확인"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
